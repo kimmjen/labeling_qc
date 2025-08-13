@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>라벨링 품질 검수 도구</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .upload-section {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .file-input {
+            margin: 20px 0;
+        }
+        .btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .btn:hover {
+            background: #0056b3;
+        }
+        .results {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .issue {
+            background: #f8f9fa;
+            border-left: 4px solid #dc3545;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 4px;
+        }
+        .issue.warning {
+            border-color: #ffc107;
+        }
+        .issue.info {
+            border-color: #17a2b8;
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔍 라벨링 품질 검수 도구</h1>
+        <p>JSON 라벨링 파일의 품질을 검사하고 자동으로 수정합니다</p>
+    </div>
+
+    <div class="upload-section">
+        <h2>📄 파일 업로드</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <div class="file-input">
+                <input type="file" id="fileInput" name="file" accept=".json" required>
+            </div>
+            <button type="submit" class="btn">검수 시작</button>
+        </form>
+    </div>
+
+    <div id="loadingDiv" class="loading" style="display: none;">
+        ⏳ 품질 검수를 진행 중입니다...
+    </div>
+
+    <div id="resultsDiv" class="results" style="display: none;">
+        <h2>📊 검수 결과</h2>
+        <div id="resultsSummary"></div>
+        <div id="issuesList"></div>
+        <button id="fixBtn" class="btn" style="display: none; margin-top: 10px;">🔧 자동 수정</button>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const fileInput = document.getElementById('fileInput');
+            const file = fileInput.files[0];
+            
+            if (!file) {
+                alert('파일을 선택해주세요.');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('file', file);
+            
+            // 로딩 표시
+            document.getElementById('loadingDiv').style.display = 'block';
+            document.getElementById('resultsDiv').style.display = 'none';
+            
+            fetch('/upload', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('loadingDiv').style.display = 'none';
+                
+                if (data.error) {
+                    alert('오류: ' + data.error);
+                    return;
+                }
+                
+                displayResults(data);
+            })
+            .catch(error => {
+                document.getElementById('loadingDiv').style.display = 'none';
+                alert('오류가 발생했습니다: ' + error);
+            });
+        });
+        
+        function displayResults(data) {
+            const resultsDiv = document.getElementById('resultsDiv');
+            const summaryDiv = document.getElementById('resultsSummary');
+            const issuesDiv = document.getElementById('issuesList');
+            const fixBtn = document.getElementById('fixBtn');
+            
+            // 요약 정보
+            summaryDiv.innerHTML = `
+                <p><strong>파일명:</strong> ${data.filename}</p>
+                <p><strong>발견된 이슈:</strong> ${data.issues_count}개</p>
+            `;
+            
+            // 이슈 목록
+            if (data.issues_count > 0) {
+                issuesDiv.innerHTML = '<h3>🔍 발견된 문제점:</h3>';
+                data.issues.forEach(issue => {
+                    const issueDiv = document.createElement('div');
+                    issueDiv.className = `issue ${issue.severity}`;
+                    issueDiv.innerHTML = `
+                        <strong>[${issue.rule_id}]</strong> ${issue.message}
+                        ${issue.element_id ? `<br><small>요소 ID: ${issue.element_id}</small>` : ''}
+                        ${issue.suggested_fix ? `<br><small>💡 제안: ${issue.suggested_fix}</small>` : ''}
+                    `;
+                    issuesDiv.appendChild(issueDiv);
+                });
+                
+                if (data.issues.some(issue => issue.auto_fixable)) {
+                    fixBtn.style.display = 'inline-block';
+                }
+            } else {
+                issuesDiv.innerHTML = '<h3>✅ 품질 문제가 발견되지 않았습니다!</h3>';
+            }
+            
+            resultsDiv.style.display = 'block';
+        }
+        
+        document.getElementById('fixBtn').addEventListener('click', function() {
+            const filename = document.querySelector('#resultsSummary p:first-child').textContent.split(': ')[1];
+            
+            fetch('/api/fix', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    file_path: `uploads/${filename}`
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    alert(`자동 수정 완료!\n수정된 이슈: ${data.fixed_count}개`);
+                    // 페이지 새로고침으로 결과 재확인
+                    location.reload();
+                } else {
+                    alert('자동 수정 실패: ' + data.error);
+                }
+            })
+            .catch(error => {
+                alert('오류가 발생했습니다: ' + error);
+            });
+        });
+    </script>
+</body>
+</html>
