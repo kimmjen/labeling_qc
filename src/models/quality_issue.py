@@ -43,6 +43,12 @@ class QualityIssue:
         """초기화 후 처리"""
         if self.metadata is None:
             self.metadata = {}
+            
+        # 라벨 변경 정보가 있으면 metadata에 저장
+        if hasattr(self, 'old_label'):
+            self.metadata['old_label'] = self.old_label
+        if hasattr(self, 'new_label'):
+            self.metadata['new_label'] = self.new_label
     
     @property
     def severity_level(self) -> int:
@@ -118,23 +124,27 @@ class FixResult:
 
 
 # 공통으로 사용되는 이슈 생성 함수들
-def create_label_issue(rule_id: str, element_id: str, current_label: str, 
-                      suggested_label: str, file_path: str, page_index: int = None) -> QualityIssue:
+def create_label_issue(rule_id: str, message: str, element_id: str, file_path: str,
+                      old_label: str = None, new_label: str = None,
+                      page_index: int = None) -> QualityIssue:
     """라벨 관련 이슈 생성"""
+    metadata = {}
+    if old_label:
+        metadata['old_label'] = old_label
+    if new_label:
+        metadata['new_label'] = new_label
+        
     return QualityIssue(
         rule_id=rule_id,
         severity="warning",
-        message=f"라벨 타입 문제: '{current_label}' → '{suggested_label}' 권장",
+        message=message,
         file_path=file_path,
         element_id=element_id,
         page_index=page_index,
         category="label_type",
-        suggested_fix=f"라벨을 '{suggested_label}'로 변경",
+        suggested_fix=f"라벨을 '{new_label}'로 변경" if new_label else None,
         auto_fixable=True,
-        metadata={
-            "current_label": current_label,
-            "suggested_label": suggested_label
-        }
+        metadata=metadata
     )
 
 

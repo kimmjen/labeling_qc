@@ -10,7 +10,13 @@ from pathlib import Path
 from typing import Dict, List, Any, Optional
 from dataclasses import dataclass
 
-from ..models.quality_issue import QualityIssue
+import sys
+from pathlib import Path
+
+# 프로젝트 루트를 sys.path에 추가
+sys.path.insert(0, str(Path(__file__).parent.parent.parent))
+
+from src.models.quality_issue import QualityIssue
 from .rule_validator import RuleValidator
 from .rule_fixer import RuleBasedFixer
 

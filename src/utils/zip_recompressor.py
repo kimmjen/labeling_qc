@@ -22,7 +22,7 @@ class ZipRecompressor:
     
     def recompress_directory(self, extracted_dir: Path) -> Path:
         """추출된 디렉토리를 다시 ZIP으로 압축"""
-        zip_name = f"{extracted_dir.name}_fixed.zip"
+        zip_name = f"{extracted_dir.name}.zip"
         zip_path = self.output_dir / zip_name
         
         try:

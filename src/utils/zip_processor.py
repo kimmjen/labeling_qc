@@ -17,12 +17,20 @@ class ZipProcessor:
     """ZIP 파일 처리기"""
     
     def __init__(self, extract_base_dir: Path = None):
-        self.extract_base_dir = extract_base_dir or Path("extracted_data")
-        self.extract_base_dir.mkdir(exist_ok=True)
+        """
+        Args:
+            extract_base_dir (Path, optional): ZIP 파일을 추출할 기본 디렉토리. None이면 ZIP 파일이 있는 위치에 추출
+        """
+        self.extract_base_dir = extract_base_dir
     
     def extract_zip_file(self, zip_path: Path) -> Path:
         """ZIP 파일 추출"""
-        extract_dir = self.extract_base_dir / zip_path.stem
+        if self.extract_base_dir:
+            # 지정된 기본 디렉토리 아래에 추출
+            extract_dir = self.extract_base_dir / zip_path.stem
+        else:
+            # 원본 위치에 추출
+            extract_dir = zip_path.parent / zip_path.stem
         
         # 이미 추출된 경우 스킵
         if extract_dir.exists():

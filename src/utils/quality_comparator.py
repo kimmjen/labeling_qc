@@ -35,47 +35,73 @@ class QualityComparator:
         self.zip_processor = ZipProcessor()
     
     def compare_directories(self, target_dir: Path, completed_dir: Path) -> List[ComparisonResult]:
-        """디렉토리 비교"""
+        """폴더명 매칭 + visualinfo/*.json만 비교"""
         results = []
         
-        # ZIP 파일이 있는 경우 자동 추출
-        target_json_files = self._get_json_files(target_dir, "target")
-        completed_json_files = self._get_json_files(completed_dir, "completed")
+        # 먼저 각 디렉토리에서 ZIP 파일 처리
+        print(f"🔍 원본 폴더 ZIP 처리 중: {target_dir}")
+        target_jsons = self._get_json_files(target_dir, "원본")
         
-        print(f"🔍 검수 대상 파일 {len(target_json_files)}개 발견")
-        print(f"🔍 검수 완료 파일 {len(completed_json_files)}개 발견")
+        print(f"🔍 비교 폴더 ZIP 처리 중: {completed_dir}")
+        completed_jsons = self._get_json_files(completed_dir, "비교")
         
-        # 파일명으로 매칭
-        target_file_dict = {self._get_file_key(f): f for f in target_json_files}
-        completed_file_dict = {self._get_file_key(f): f for f in completed_json_files}
+        # visualinfo/*.json 파일들의 ID 추출 및 매칭
+        target_jsons_by_id = {}
+        completed_jsons_by_id = {}
         
-        for file_key, target_file in target_file_dict.items():
-            if file_key in completed_file_dict:
-                completed_file = completed_file_dict[file_key]
-                result = self._compare_single_file(target_file, completed_file)
+        for json_file in target_jsons:
+            if "visualinfo" in str(json_file):
+                doc_id = self._get_file_key(json_file)
+                if doc_id:
+                    target_jsons_by_id[doc_id] = json_file
+        
+        for json_file in completed_jsons:
+            if "visualinfo" in str(json_file):
+                doc_id = self._get_file_key(json_file)
+                if doc_id:
+                    completed_jsons_by_id[doc_id] = json_file
+        
+        total_docs = len(set(target_jsons_by_id.keys()) | set(completed_jsons_by_id.keys()))
+        print(f"\n📊 총 {total_docs}개 문서 발견")
+        print(f"📄 원본: {len(target_jsons_by_id)}개")
+        print(f"📄 비교: {len(completed_jsons_by_id)}개")
+        
+        # 매칭되는 파일들을 비교
+        compared = 0
+        for doc_id, target_json in sorted(target_jsons_by_id.items()):
+            if doc_id in completed_jsons_by_id:
+                completed_json = completed_jsons_by_id[doc_id]
+                result = self._compare_single_file(target_json, completed_json)
                 results.append(result)
-                print(f"✅ 비교 완료: {file_key}")
+                compared += 1
+                print(f"✅ 비교 완료 ({compared}/{total_docs}): {doc_id}")
             else:
-                print(f"⚠️ 검수완료 파일 없음: {file_key}")
+                print(f"⚠️ 정답 파일 없음: {doc_id}")
+        
+        # 비교되지 않은 정답 파일 체크
+        missing = 0
+        for doc_id in sorted(completed_jsons_by_id.keys()):
+            if doc_id not in target_jsons_by_id:
+                missing += 1
+                print(f"⚠️ 원본 파일 없음: {doc_id}")
+        
+        if missing > 0:
+            print(f"\n⚠️ {missing}개 파일이 원본에서 누락됨")
         
         return results
     
     def _get_json_files(self, directory: Path, label: str) -> List[Path]:
-        """디렉토리에서 JSON 파일 추출"""
-        json_files = []
-        
-        # 직접 JSON 파일 찾기
-        direct_json = list(directory.rglob("*.json"))
-        if direct_json:
-            json_files.extend(direct_json)
-            print(f"📄 {label} 디렉토리에서 직접 JSON 파일 {len(direct_json)}개 발견")
-        
-        # ZIP 파일이 있으면 추출
+        """디렉토리에서 JSON 파일 추출 - 자동으로 ZIP 처리"""
+        # ZIP 파일 처리
         zip_files = list(directory.rglob("*.zip"))
         if zip_files:
-            print(f"📦 {label} 디렉토리에서 ZIP 파일 {len(zip_files)}개 발견, 추출 중...")
-            extracted_json = self.zip_processor.process_directory(directory)
-            json_files.extend(extracted_json)
+            print(f"� {label} 디렉토리에서 ZIP 파일 {len(zip_files)}개 발견, 압축 해제 시작...")
+            for zip_file in zip_files:
+                self.zip_processor.extract_zip_file(zip_file)
+        
+        # visualinfo/*.json 파일만 검색
+        json_files = list(directory.rglob("visualinfo/*.json"))
+        print(f"📄 {label} 디렉토리에서 visualinfo JSON 파일 {len(json_files)}개 발견")
         
         return json_files
     
@@ -88,6 +114,15 @@ class QualityComparator:
             return name.split("_visualinfo")[0]
         else:
             return file_path.stem
+            
+    def _get_folder_name(self, file_path: Path) -> str:
+        """파일 경로에서 상위 폴더명 추출"""
+        # visualinfo/*.json 파일의 상위 폴더명 추출
+        try:
+            # visualinfo의 상위 폴더명이 실제 문서 ID
+            return file_path.parent.parent.name
+        except:
+            return ""
     
     def _compare_single_file(self, target_file: Path, completed_file: Path) -> ComparisonResult:
         """단일 파일 비교"""
@@ -252,39 +287,43 @@ class QualityComparator:
 
 def main():
     """메인 함수"""
-    # 검수 대상 폴더
-    target_dir = Path(r"C:\Users\User\Downloads\250812_전체_박선화\1페이지-그림+비교표+테이블 삽입")
-    
-    # 검수 완료 폴더  
-    completed_dir = Path(r"C:\Users\User\Documents\검수\20250813-박선화\1페이지-그림+비교표+테이블 삽입")
-    
+    import argparse
+    parser = argparse.ArgumentParser(description="자동수정 결과와 정답 폴더 비교")
+    parser.add_argument("target_dir", help="자동수정 결과 폴더 경로")
+    parser.add_argument("completed_dir", help="정답(수동검수) 폴더 경로")
+    parser.add_argument("--report", help="비교 리포트 저장 경로", default="quality_comparison_report.json")
+    args = parser.parse_args()
+
+    target_dir = Path(args.target_dir)
+    completed_dir = Path(args.completed_dir)
+    report_file = Path(args.report)
+
     if not target_dir.exists():
         print(f"❌ 검수 대상 폴더를 찾을 수 없습니다: {target_dir}")
         return
-    
+
     if not completed_dir.exists():
         print(f"❌ 검수 완료 폴더를 찾을 수 없습니다: {completed_dir}")
         return
-    
+
     print("🚀 검수 비교 시작")
     print(f"📂 검수 대상: {target_dir}")
     print(f"📂 검수 완료: {completed_dir}")
-    
+
     # 비교 실행
     comparator = QualityComparator()
     results = comparator.compare_directories(target_dir, completed_dir)
-    
+
     # 보고서 생성
     report = comparator.generate_comparison_report(results)
-    
+
     # 결과 출력
     comparator.print_summary(report)
-    
+
     # 상세 보고서 저장
-    report_file = Path("quality_comparison_report.json")
     with open(report_file, 'w', encoding='utf-8') as f:
         json.dump(report, f, ensure_ascii=False, indent=2)
-    
+
     print(f"\n💾 상세 보고서 저장: {report_file}")
 
 

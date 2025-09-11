@@ -111,16 +111,46 @@ class RuleBasedFixer:
         """올바른 라벨 타입 결정"""
         if not text:
             return current_label
-        
+
         text = text.strip()
+
+        # R003: 법령 구조 라벨링
+        # ParaTitle로 변경해야 할 패턴들
+        if re.search(r'[가-힣]+법$', text):  # ~법
+            element['category']['type'] = 'HEADING'
+            return 'ParaTitle'
+        elif re.search(r'^제\s*\d+\s*편', text):  # 제~편
+            element['category']['type'] = 'HEADING'
+            return 'ParaTitle'
+        elif re.search(r'^제\s*\d+\s*장', text):  # 제~장
+            element['category']['type'] = 'HEADING'
+            return 'ParaTitle'
+        elif re.search(r'^제\s*\d+\s*절', text):  # 제~절
+            element['category']['type'] = 'HEADING'
+            return 'ParaTitle'
+        elif re.search(r'^제\s*\d+\s*조', text):  # 제~조
+            element['category']['type'] = 'HEADING'
+            return 'ParaTitle'
         
-        # R009: '원문' / '번역문'이면서 ListText인 경우 ParaText로 변경
+        # ListText로 변경해야 할 패턴들
+        elif (re.search(r'^\s*\(\d+\)', text) or  # (1), (2) 형태
+              re.search(r'^\s*\d+\.', text) or    # 1., 2. 형태
+              re.search(r'^\s*[가-힣]\.', text) or # 가., 나. 형태
+              '항' in text):                      # 항이 포함된 내용
+            element['category']['type'] = 'LIST'
+            return 'ListText'
+
+        # RegionTitle이면서 텍스트에 '원문' 또는 '번역문'이 포함된 경우 ParaTitle로 변경
+        if current_label == "RegionTitle" and ("원문" in text or "번역문" in text):
+            return "ParaTitle"
+
+        # R001: '원문' / '번역문'이면서 ListText인 경우 ParaText로 변경
         if text in {"원문", "번역문"} and current_label == "ListText":
             # 타입도 함께 변경
             if 'category' in element and 'type' in element['category']:
                 element['category']['type'] = 'PARAGRAPH'
             return 'ParaText'
-        
+
         return current_label
     
     def _is_legal_content(self, text: str) -> bool:
