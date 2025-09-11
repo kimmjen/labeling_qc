@@ -10,6 +10,11 @@ import json
 import re
 from pathlib import Path
 import PyPDF2
+from tqdm import tqdm
+import shutil
+import zipfile
+import shutil
+import zipfile
 
 # 프로젝트 루트를 sys.path에 추가
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -19,6 +24,7 @@ from src.utils.quality_comparator import QualityComparator
 from src.utils.zip_processor import ZipProcessor
 from src.utils.zip_recompressor import ZipRecompressor
 from src.core.rule_fixer import RuleBasedFixer
+from src.services.pdf_uploader import PDFUploader
 
 
 def main():
@@ -129,6 +135,11 @@ JSON 파일 내의 라벨링 오류를 감지하고, 한글 인코딩 문제까�
         action="store_true", 
         help="ZIP 파일들의 총 페이지 수를 분석하고 통계 정보 출력"
     )
+    mode_group.add_argument(
+        "--upload", 
+        action="store_true", 
+        help="PDF 파일들을 API로 업로드하여 OCR 처리 후 visualcontent ZIP 파일로 저장"
+    )
     
     # 비교 및 분석 옵션
     analysis_group = parser.add_argument_group('비교 및 분석', '검수 결과를 비교하고 분석합니다')
@@ -214,7 +225,6 @@ JSON 파일 내의 라벨링 오류를 감지하고, 한글 인코딩 문제까�
 
             if not json_files:
                 print("❌ JSON 파일을 찾을 수 없습니다.")
-                import shutil
                 shutil.rmtree(temp_extract_dir, ignore_errors=True)
                 sys.exit(1)
 
@@ -292,9 +302,100 @@ JSON 파일 내의 라벨링 오류를 감지하고, 한글 인코딩 문제까�
         
         finally:
             # 임시 디렉토리 정리
-            import shutil
             shutil.rmtree(temp_extract_dir, ignore_errors=True)
         
+        return
+    
+    # PDF 업로드 및 OCR 처리 모드
+    if args.upload:
+        print("📤 PDF 업로드 및 OCR 처리 시작")
+        
+        # PDF 파일 검색
+        pdf_files = list(target_path.glob("*.pdf")) + list(target_path.glob("*.PDF"))
+        
+        if not pdf_files:
+            print("❌ PDF 파일을 찾을 수 없습니다.")
+            sys.exit(1)
+        
+        print(f"📂 발견된 PDF 파일: {len(pdf_files)}개")
+        
+        # PDF 업로드 처리기 초기화
+        uploader = PDFUploader()
+        
+        success_count = 0
+        start_time = time.time()
+        
+        # tqdm으로 진행률 표시
+        with tqdm(total=len(pdf_files), desc="📤 PDF 처리 중", 
+                  unit="파일", bar_format="{l_bar}{bar}| {n_fmt}/{total_fmt} [{elapsed}<{remaining}, {rate_fmt}]") as pbar:
+            
+            for pdf_file in pdf_files:
+                file_start_time = time.time()
+                pbar.set_postfix_str(f"현재: {pdf_file.name}")
+                
+                try:
+                    # 1. PDF 업로드
+                    pbar.set_description("📤 업로드 중")
+                    file_info = uploader.upload_pdf(pdf_file)
+                    if not file_info:
+                        pbar.write(f"❌ 업로드 실패: {pdf_file.name}")
+                        pbar.update(1)
+                        continue
+                    
+                    upload_time = time.time() - file_start_time
+                    pbar.write(f"✅ 업로드 완료: {file_info['fileName']} ({file_info['numOfPages']}페이지, {upload_time:.1f}초)")
+                    
+                    # 2. OCR 처리 요청
+                    pbar.set_description("🔍 OCR 요청 중")
+                    ocr_start_time = time.time()
+                    extract_result = uploader.extract_pages(file_info['fileId'], f"1-{file_info['numOfPages']}")
+                    if not extract_result:
+                        pbar.write(f"❌ OCR 처리 실패: {pdf_file.name}")
+                        pbar.update(1)
+                        continue
+                    
+                    ocr_request_time = time.time() - ocr_start_time
+                    pbar.write(f"🔍 OCR 요청 완료: {pdf_file.name} ({ocr_request_time:.1f}초)")
+                    
+                    # 3. VisualInfo 다운로드 (대기 시간 포함)
+                    pbar.set_description("⏳ OCR 결과 대기")
+                    visual_start_time = time.time()
+                    visual_info = uploader.get_visual_info(file_info['fileId'], progress_callback=lambda msg: pbar.set_postfix_str(msg))
+                    if not visual_info:
+                        pbar.write(f"❌ VisualInfo 다운로드 실패: {pdf_file.name}")
+                        pbar.update(1)
+                        continue
+                    
+                    visual_time = time.time() - visual_start_time
+                    pbar.write(f"📄 VisualInfo 완료: {pdf_file.name} ({visual_time:.1f}초)")
+                    
+                    # 4. ZIP 파일로 저장
+                    pbar.set_description("📦 ZIP 생성 중")
+                    zip_start_time = time.time()
+                    zip_filename = f"visualcontent-{pdf_file.stem}.zip"
+                    zip_path = target_path / zip_filename
+                    
+                    zip_created = uploader.create_visualcontent_zip(
+                        pdf_file, visual_info, zip_path, file_info['fileId']
+                    )
+                    
+                    zip_time = time.time() - zip_start_time
+                    file_total_time = time.time() - file_start_time
+                    
+                    if zip_created:
+                        pbar.write(f"📦 ZIP 생성 완료: {zip_filename} (생성: {zip_time:.1f}초, 총: {file_total_time:.1f}초)")
+                        success_count += 1
+                    else:
+                        pbar.write(f"❌ ZIP 파일 생성 실패: {pdf_file.name}")
+                    
+                except Exception as e:
+                    pbar.write(f"❌ {pdf_file.name} 처리 중 오류: {e}")
+                finally:
+                    pbar.update(1)
+        
+        total_time = time.time() - start_time
+        print(f"\n✅ 업로드 완료: {success_count}/{len(pdf_files)}개 파일")
+        print(f"⏱️  총 처리 시간: {total_time:.1f}초 (평균: {total_time/len(pdf_files):.1f}초/파일)")
         return
     
     # ListText 통일 + R003 법령 구조 적용 모드
@@ -390,94 +491,114 @@ JSON 파일 내의 라벨링 오류를 감지하고, 한글 인코딩 문제까�
         return
     
     if args.listtext_only2:
-        print("📝 ListText 통일 + R003 법령 구조 적용 시작")
+        print("📝 ListText 통일 + R003 법령 구조 적용 (폴더 구조 유지)")
         
-        # 검수 폴더 및 내부 extracted_data 폴더 생성 (ZIP 파일이 있는 디렉토리에)
-        review_dir = target_path / "검수_ListText"
-        review_dir.mkdir(exist_ok=True)
-        extracted_dir = review_dir / "extracted_data"
-        extracted_dir.mkdir(exist_ok=True)
-        print(f"📁 검수 폴더 생성: {review_dir}")
-        print(f"📁 추출 폴더 생성: {extracted_dir}")
-
-        # 1. ZIP 파일 추출
-        processor = ZipProcessor(extract_base_dir=extracted_dir)
-        json_files = processor.process_directory(target_path)
-
-        if not json_files:
-            print("❌ JSON 파일을 찾을 수 없습니다.")
+        # 1. 경로 설정
+        output_dir = target_path.parent / f"{target_path.name}_ListText"
+        temp_processing_dir = target_path.parent / "temp_processing_ListText"
+        
+        # 이전 결과 폴더/임시 폴더 삭제
+        if output_dir.exists():
+            shutil.rmtree(output_dir)
+        if temp_processing_dir.exists():
+            shutil.rmtree(temp_processing_dir)
+            
+        output_dir.mkdir(exist_ok=True)
+        temp_processing_dir.mkdir(exist_ok=True)
+        
+        print(f"� 원본 경로: {target_path}")
+        print(f"📁 결과물 저장 경로: {output_dir}")
+        
+        # 2. ZIP 파일 목록 탐색
+        zip_files = list(target_path.rglob("*.zip"))
+        if not zip_files:
+            print("❌ 처리할 ZIP 파일을 찾을 수 없습니다.")
+            shutil.rmtree(temp_processing_dir)
             sys.exit(1)
-
-        # 2. ListText 통일 + R003 적용
-        print(f"\n🔧 ListText 통일 및 R003 법령 구조 적용: {len(json_files)}개 파일")
+            
+        print(f"� 총 {len(zip_files)}개의 ZIP 파일을 처리합니다.")
+        
         total_changes = 0
-
-        for json_file in json_files:
-            if "visualinfo" in json_file.name:
+        
+        # 3. 파일 단위 처리
+        with tqdm(total=len(zip_files), desc="🚀 전체 진행률", unit="개") as pbar:
+            for zip_path in zip_files:
+                pbar.set_postfix_str(zip_path.name)
+                
                 try:
-                    # JSON 파일 로드
+                    # 3-1. 임시 추출
+                    extract_dir = temp_processing_dir / zip_path.stem
+                    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                        zip_ref.extractall(extract_dir)
+                        
+                    # 3-2. visualinfo.json 파일 찾기
+                    visualinfo_files = list(extract_dir.rglob("*_visualinfo.json"))
+                    if not visualinfo_files:
+                        pbar.write(f"  ⚠️ {zip_path.name}: visualinfo.json 파일 없음")
+                        # 원본 ZIP 그대로 복사
+                        relative_path = zip_path.relative_to(target_path)
+                        dest_path = output_dir / relative_path
+                        dest_path.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copy2(zip_path, dest_path)
+                        continue
+
+                    json_file = visualinfo_files[0]
+                    
+                    # 3-3. ListText 변환 로직
                     with open(json_file, 'r', encoding='utf-8') as f:
                         data = json.load(f)
                     
                     elements = data.get('elements', [])
                     changes = 0
                     
+                    # 1단계: PageNumber 제외하고 ListText로 변경
                     for element in elements:
                         category = element.get('category', {})
-                        text = element.get('content', {}).get('text', '').strip()
-                        current_label = category.get('label', '')
-                        
-                        # 1단계: PageNumber를 제외하고 모든 것을 ListText로 변경
-                        if current_label != 'ListText' and current_label != 'PageNumber':
+                        if category.get('label') not in ['ListText', 'PageNumber']:
                             category['label'] = 'ListText'
-                            category['type'] = 'LIST'  # type도 함께 변경
+                            category['type'] = 'LIST'
                             changes += 1
                     
-                    # 2단계: R003 법령 구조 규칙 적용 (ListText → ParaTitle)
+                    # 2단계: 법령 구조 규칙 적용
                     for element in elements:
                         category = element.get('category', {})
                         text = element.get('content', {}).get('text', '').strip()
-                        current_label = category.get('label', '')
-                        
-                        if current_label == 'ListText' and text:
-                            # ~법 패턴
-                            if re.search(r'[가-힣]+법$', text):
+                        if category.get('label') == 'ListText' and text:
+                            if re.search(r'[가-힣]+법$', text) or re.search(r'^제\s*\d+\s*(편|장|절|관|조)', text):
                                 category['label'] = 'ParaTitle'
-                                category['type'] = 'HEADING'  # type도 함께 변경
-                                changes += 1
-                            # 제~편, 제~장, 제~절, 제~조 패턴
-                            elif re.search(r'^제\s*\d+\s*(편|장|절|관|조)', text):
-                                category['label'] = 'ParaTitle'
-                                category['type'] = 'HEADING'  # type도 함께 변경
+                                category['type'] = 'HEADING'
                                 changes += 1
                     
                     if changes > 0:
-                        # JSON 파일 저장
                         with open(json_file, 'w', encoding='utf-8') as f:
                             json.dump(data, f, ensure_ascii=False, indent=2)
-                        
                         total_changes += changes
-                        print(f"  ✅ {json_file.parent.parent.name}: {changes}개 변경")
+                        pbar.write(f"  ✅ {zip_path.name}: {changes}개 항목 변경")
                     else:
-                        print(f"  📝 {json_file.parent.parent.name}: 변경할 항목 없음")
-                        
+                        pbar.write(f"  📝 {zip_path.name}: 변경 사항 없음")
+
+                    # 3-4. 결과물 재압축 및 저장
+                    relative_path = zip_path.relative_to(target_path)
+                    dest_path = output_dir / relative_path
+                    dest_path.parent.mkdir(parents=True, exist_ok=True)
+                    
+                    with zipfile.ZipFile(dest_path, 'w', zipfile.ZIP_DEFLATED) as new_zip:
+                        for file_to_zip in extract_dir.rglob('*'):
+                            if file_to_zip.is_file():
+                                arcname = file_to_zip.relative_to(extract_dir)
+                                new_zip.write(file_to_zip, arcname)
+
                 except Exception as e:
-                    print(f"  ❌ {json_file.parent.parent.name}: 오류 - {str(e)}")
+                    pbar.write(f"  ❌ {zip_path.name} 처리 중 오류: {e}")
+                finally:
+                    # 임시 추출 폴더 정리
+                    shutil.rmtree(extract_dir, ignore_errors=True)
+                    pbar.update(1)
 
-        print(f"\n📊 총 변경 항목: {total_changes}개")
-
-        # 3. 재압축
-        if total_changes > 0:
-            print(f"\n📦 재압축 중...")
-            recompressor = ZipRecompressor(review_dir)
-            recompressed_files = recompressor.recompress_all(extracted_dir)
-
-            print(f"✅ 처리 완료!")
-            print(f"📁 수정된 파일 저장 위치: {review_dir}")
-            print(f"📦 생성된 파일: {len(recompressed_files)}개")
-        else:
-            print("📝 변경사항이 없어 재압축하지 않습니다.")
-
+        # 4. 최종 정리
+        shutil.rmtree(temp_processing_dir, ignore_errors=True)
+        print(f"\n🎉 처리 완료! 총 {total_changes}개 항목이 변경되었습니다.")
+        print(f"� 결과는 {output_dir} 폴더에 저장되었습니다.")
         return
     
     # 지정 폴더에 검수 폴더 생성하여 처리
