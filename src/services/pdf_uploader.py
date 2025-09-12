@@ -21,6 +21,14 @@ class PDFUploader:
         # http://172.19.0.35
         self.base_url = base_url
         self.session = requests.Session()
+        # flow.md에 따른 기본 헤더 설정
+        self.session.headers.update({
+            'accept': 'application/json, text/plain, */*',
+            'accept-encoding': 'gzip, deflate',
+            'accept-language': 'ko-KR,ko;q=0.9,en-GB;q=0.8,en;q=0.7,en-US;q=0.6',
+            'connection': 'keep-alive',
+            'user-agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/139.0.0.0 Safari/537.36'
+        })
         
     def upload_pdf(self, pdf_path: Path) -> Optional[Dict[str, Any]]:
         """
@@ -71,7 +79,13 @@ class PDFUploader:
             url = f"{self.base_url}/files/{file_id}/extract-page"
             params = {'range': page_range}
             
-            response = self.session.post(url, params=params)
+            # flow.md에 따른 추가 헤더 설정
+            headers = {
+                'origin': self.base_url.replace('/api/v1/dl', ''),
+                'referer': f"{self.base_url.replace('/api/v1/dl', '')}/"
+            }
+            
+            response = self.session.post(url, params=params, headers=headers)
             response.raise_for_status()
             
             result = response.json()
@@ -143,6 +157,34 @@ class PDFUploader:
             print(f"❌ VisualInfo 조회 오류: {e}")
             return None
     
+    def download_image(self, file_id: str, image_path: str) -> Optional[bytes]:
+        """
+        이미지 파일을 다운로드합니다.
+        
+        Args:
+            file_id: 파일 ID
+            image_path: 이미지 경로 (예: "figure/xxx.png")
+            
+        Returns:
+            이미지 바이너리 데이터
+        """
+        try:
+            # 이미지 다운로드 URL 구성
+            url = f"{self.base_url}/files/{file_id}/extract-image"
+            params = {'imagePath': image_path}
+            
+            response = self.session.get(url, params=params)
+            response.raise_for_status()
+            
+            return response.content
+            
+        except requests.RequestException as e:
+            print(f"❌ 이미지 다운로드 오류 ({image_path}): {e}")
+            return None
+        except Exception as e:
+            print(f"❌ 이미지 처리 오류 ({image_path}): {e}")
+            return None
+    
     def create_visualcontent_zip(self, pdf_path: Path, visual_info: Dict[str, Any], zip_path: Path, file_id: str = None) -> bool:
         """
         VisualContent ZIP 파일을 생성합니다.
@@ -169,7 +211,8 @@ class PDFUploader:
                 if not actual_file_id:
                     raise ValueError("fileId를 찾을 수 없습니다.")
 
-                json_filename = f"{actual_file_id}_visualinfo.json"
+                # Working 형태: 원본 파일명 기반으로 JSON 파일명 생성
+                json_filename = f"{pdf_path.stem}_visualinfo.json"
                 json_content = json.dumps(visual_info, ensure_ascii=False, indent=2)
                 zipf.writestr(f"visualinfo/{json_filename}", json_content.encode('utf-8'))
                 
@@ -186,6 +229,29 @@ class PDFUploader:
                 meta_filename = f"{actual_file_id}_meta.json"
                 meta_content = json.dumps(meta_data, ensure_ascii=False, indent=2)
                 zipf.writestr(f"meta/{meta_filename}", meta_content.encode('utf-8'))
+                
+                # 4. 이미지 파일들 다운로드 및 추가
+                elements = visual_info.get('elements', [])
+                image_paths = set()  # 중복 방지
+                
+                # visualinfo에서 이미지 경로 추출
+                for element in elements:
+                    content = element.get('content', {})
+                    if 'imagePath' in content:
+                        image_paths.add(content['imagePath'])
+                
+                # 이미지 다운로드 및 ZIP에 추가
+                if image_paths:
+                    print(f"📥 {len(image_paths)}개 이미지 다운로드 중...")
+                    for image_path in image_paths:
+                        print(f"  다운로드 중: {image_path}")
+                        image_data = self.download_image(actual_file_id, image_path)
+                        
+                        if image_data:
+                            zipf.writestr(image_path, image_data)
+                            print(f"  ✅ 추가됨: {image_path} ({len(image_data):,} bytes)")
+                        else:
+                            print(f"  ❌ 실패: {image_path}")
             
             return True
             

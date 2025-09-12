@@ -13,8 +13,6 @@ import PyPDF2
 from tqdm import tqdm
 import shutil
 import zipfile
-import shutil
-import zipfile
 
 # 프로젝트 루트를 sys.path에 추가
 sys.path.insert(0, str(Path(__file__).parent.parent))
@@ -127,6 +125,12 @@ JSON 파일 내의 라벨링 오류를 감지하고, 한글 인코딩 문제까�
 
     mode_group.add_argument(
         "--listtext-only2", 
+        action="store_true", 
+        help="모든 라벨(ParaText, RegionTitle 등)을 ListText로 통일 후 R003 법령 구조 규칙만 적용"
+    )
+
+    mode_group.add_argument(
+        "--paratext-only", 
         action="store_true", 
         help="모든 라벨(ParaText, RegionTitle 등)을 ListText로 통일 후 R003 법령 구조 규칙만 적용"
     )
@@ -555,6 +559,117 @@ JSON 파일 내의 라벨링 오류를 감지하고, 한글 인코딩 문제까�
                     for element in elements:
                         category = element.get('category', {})
                         if category.get('label') not in ['ListText', 'PageNumber']:
+                            category['label'] = 'ListText'
+                            category['type'] = 'LIST'
+                            changes += 1
+                    
+                    # 2단계: 법령 구조 규칙 적용
+                    for element in elements:
+                        category = element.get('category', {})
+                        text = element.get('content', {}).get('text', '').strip()
+                        if category.get('label') == 'ListText' and text:
+                            if re.search(r'[가-힣]+법$', text) or re.search(r'^제\s*\d+\s*(편|장|절|관|조)', text):
+                                category['label'] = 'ParaTitle'
+                                category['type'] = 'HEADING'
+                                changes += 1
+                    
+                    if changes > 0:
+                        with open(json_file, 'w', encoding='utf-8') as f:
+                            json.dump(data, f, ensure_ascii=False, indent=2)
+                        total_changes += changes
+                        pbar.write(f"  ✅ {zip_path.name}: {changes}개 항목 변경")
+                    else:
+                        pbar.write(f"  📝 {zip_path.name}: 변경 사항 없음")
+
+                    # 3-4. 결과물 재압축 및 저장
+                    relative_path = zip_path.relative_to(target_path)
+                    dest_path = output_dir / relative_path
+                    dest_path.parent.mkdir(parents=True, exist_ok=True)
+                    
+                    with zipfile.ZipFile(dest_path, 'w', zipfile.ZIP_DEFLATED) as new_zip:
+                        for file_to_zip in extract_dir.rglob('*'):
+                            if file_to_zip.is_file():
+                                arcname = file_to_zip.relative_to(extract_dir)
+                                new_zip.write(file_to_zip, arcname)
+
+                except Exception as e:
+                    pbar.write(f"  ❌ {zip_path.name} 처리 중 오류: {e}")
+                finally:
+                    # 임시 추출 폴더 정리
+                    shutil.rmtree(extract_dir, ignore_errors=True)
+                    pbar.update(1)
+
+        # 4. 최종 정리
+        shutil.rmtree(temp_processing_dir, ignore_errors=True)
+        print(f"\n🎉 처리 완료! 총 {total_changes}개 항목이 변경되었습니다.")
+        print(f"� 결과는 {output_dir} 폴더에 저장되었습니다.")
+        return
+    
+    if args.paratext_only:
+        print("📝 ListText 통일 + R003 법령 구조 적용 (폴더 구조 유지)")
+        
+        # 1. 경로 설정
+        output_dir = target_path.parent / f"{target_path.name}_ListText"
+        temp_processing_dir = target_path.parent / "temp_processing_ListText"
+        
+        # 이전 결과 폴더/임시 폴더 삭제
+        if output_dir.exists():
+            shutil.rmtree(output_dir)
+        if temp_processing_dir.exists():
+            shutil.rmtree(temp_processing_dir)
+            
+        output_dir.mkdir(exist_ok=True)
+        temp_processing_dir.mkdir(exist_ok=True)
+        
+        print(f"� 원본 경로: {target_path}")
+        print(f"📁 결과물 저장 경로: {output_dir}")
+        
+        # 2. ZIP 파일 목록 탐색
+        zip_files = list(target_path.rglob("*.zip"))
+        if not zip_files:
+            print("❌ 처리할 ZIP 파일을 찾을 수 없습니다.")
+            shutil.rmtree(temp_processing_dir)
+            sys.exit(1)
+            
+        print(f"� 총 {len(zip_files)}개의 ZIP 파일을 처리합니다.")
+        
+        total_changes = 0
+        
+        # 3. 파일 단위 처리
+        with tqdm(total=len(zip_files), desc="🚀 전체 진행률", unit="개") as pbar:
+            for zip_path in zip_files:
+                pbar.set_postfix_str(zip_path.name)
+                
+                try:
+                    # 3-1. 임시 추출
+                    extract_dir = temp_processing_dir / zip_path.stem
+                    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+                        zip_ref.extractall(extract_dir)
+                        
+                    # 3-2. visualinfo.json 파일 찾기
+                    visualinfo_files = list(extract_dir.rglob("*_visualinfo.json"))
+                    if not visualinfo_files:
+                        pbar.write(f"  ⚠️ {zip_path.name}: visualinfo.json 파일 없음")
+                        # 원본 ZIP 그대로 복사
+                        relative_path = zip_path.relative_to(target_path)
+                        dest_path = output_dir / relative_path
+                        dest_path.parent.mkdir(parents=True, exist_ok=True)
+                        shutil.copy2(zip_path, dest_path)
+                        continue
+
+                    json_file = visualinfo_files[0]
+                    
+                    # 3-3. ListText 변환 로직
+                    with open(json_file, 'r', encoding='utf-8') as f:
+                        data = json.load(f)
+                    
+                    elements = data.get('elements', [])
+                    changes = 0
+                    
+                    # 1단계: PageNumber 제외하고 ListText로 변경
+                    for element in elements:
+                        category = element.get('category', {})
+                        if category.get('label') in ['ParaText']:
                             category['label'] = 'ListText'
                             category['type'] = 'LIST'
                             changes += 1
