@@ -4,7 +4,7 @@
 """
 
 import unittest
-from src.core.rule_validator import RuleValidator
+from backend.src.core.rule_validator import RuleValidator
 
 class TestRuleValidator(unittest.TestCase):
     def setUp(self):

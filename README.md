@@ -92,7 +92,7 @@ labeling_qc/
 ## API 사용 예시
 
 ```python
-from src.core.quality_controller import QualityController
+from backend.src.core import QualityController
 from pathlib import Path
 
 # 컨트롤러 초기화

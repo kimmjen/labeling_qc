@@ -4,17 +4,13 @@
 """
 
 import json
-import sys
 from pathlib import Path
-from typing import Dict, List, Any, Tuple
+from typing import Dict, List, Any
 from dataclasses import dataclass
 
-# 프로젝트 루트를 sys.path에 추가
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from src.core.quality_controller import QualityController
-from src.models.quality_issue import QualityIssue
-from src.utils.zip_processor import ZipProcessor
+from backend.src.core import QualityController
+from backend.src.models.quality_issue import QualityIssue
+from backend.src.utils.zip_processor import ZipProcessor
 
 
 @dataclass

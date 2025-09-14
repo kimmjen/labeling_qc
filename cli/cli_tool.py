@@ -14,15 +14,12 @@ from tqdm import tqdm
 import shutil
 import zipfile
 
-# 프로젝트 루트를 sys.path에 추가
-sys.path.insert(0, str(Path(__file__).parent.parent))
-
-from src.core.quality_controller import QualityController
-from src.utils.quality_comparator import QualityComparator
-from src.utils.zip_processor import ZipProcessor
-from src.utils.zip_recompressor import ZipRecompressor
-from src.core.rule_fixer import RuleBasedFixer
-from src.services.pdf_uploader import PDFUploader
+from backend.src.core import QualityController
+from backend.src.utils.quality_comparator import QualityComparator
+from backend.src import ZipProcessor
+from backend.src.utils.zip_recompressor import ZipRecompressor
+from backend.src.core.rule_fixer import RuleBasedFixer
+from backend.src import PDFUploader
 
 
 def main():

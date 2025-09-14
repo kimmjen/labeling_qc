@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 """
-ZIP 재압축 도구 - 수정된 파일들을 다시 ZIP으로 압축
+ZIP 재압축기
+수정된 JSON 파일들을 다시 ZIP 파일로 압축하는 도구
 """
 
 import zipfile
 import shutil
-import sys
 from pathlib import Path
 from typing import List
-
-# 프로젝트 루트를 sys.path에 추가
-sys.path.insert(0, str(Path(__file__).parent.parent))
 
 
 class ZipRecompressor:

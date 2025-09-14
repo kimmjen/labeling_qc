@@ -1,16 +1,13 @@
 #!/usr/bin/env python3
 """
-ZIP 파일 추출 및 처리 유틸리티
+ZIP 파일 처리기
+라벨링 데이터 ZIP 파일을 추출하고 JSON 파일을 찾는 도구
 """
 
 import zipfile
-import json
-import sys
 from pathlib import Path
-from typing import List, Dict, Any
-
-# 프로젝트 루트를 sys.path에 추가
-sys.path.insert(0, str(Path(__file__).parent.parent))
+from typing import List
+import shutil
 
 
 class ZipProcessor:
