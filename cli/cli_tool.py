@@ -25,6 +25,33 @@ from src.core.rule_fixer import RuleBasedFixer
 from src.services.pdf_uploader import PDFUploader
 
 
+def safe_rmtree(path, max_attempts=3, delay=0.5):
+    """
+    안전한 폴더 삭제 함수 - 권한 오류 시 재시도
+    """
+    from pathlib import Path
+    import time
+    
+    path = Path(path)
+    if not path.exists():
+        return True
+        
+    for attempt in range(max_attempts):
+        try:
+            shutil.rmtree(path)
+            return True
+        except PermissionError:
+            if attempt < max_attempts - 1:
+                time.sleep(delay)
+            else:
+                print(f"⚠️ 폴더 삭제 실패 (권한 오류): {path}")
+                return False
+        except Exception as e:
+            print(f"⚠️ 폴더 삭제 중 오류: {e}")
+            return False
+    return False
+
+
 def main():
     """메인 실행 함수"""
     parser = argparse.ArgumentParser(
@@ -126,7 +153,7 @@ JSON 파일 내의 라벨링 오류를 감지하고, 한글 인코딩 문제까�
     mode_group.add_argument(
         "--listtext-only2", 
         action="store_true", 
-        help="모든 라벨(ParaText, RegionTitle 등)을 ListText로 통일 후 R003 법령 구조 규칙만 적용"
+        help="모든 라벨을 ListText로 통일 후 R003 법령 구조 규칙만 적용 (단일 ZIP 파일 또는 폴더 지원, 폴더 구조 유지)"
     )
 
     mode_group.add_argument(
@@ -497,27 +524,39 @@ JSON 파일 내의 라벨링 오류를 감지하고, 한글 인코딩 문제까�
     if args.listtext_only2:
         print("📝 ListText 통일 + R003 법령 구조 적용 (폴더 구조 유지)")
         
-        # 1. 경로 설정
-        output_dir = target_path.parent / f"{target_path.name}_ListText"
-        temp_processing_dir = target_path.parent / "temp_processing_ListText"
+        # 1. 경로 설정 및 입력 타입 확인
+        if target_path.is_file() and target_path.suffix.lower() == '.zip':
+            # 단일 ZIP 파일 처리
+            output_dir = target_path.parent / f"{target_path.stem}_ListText"
+            temp_processing_dir = target_path.parent / "temp_processing_ListText"
+            zip_files = [target_path]
+            print(f"📄 단일 ZIP 파일 처리 모드")
+        else:
+            # 폴더 처리 (기존 방식)
+            output_dir = target_path.parent / f"{target_path.name}_ListText"
+            temp_processing_dir = target_path.parent / "temp_processing_ListText"
+            zip_files = list(target_path.rglob("*.zip"))
+            print(f"📁 폴더 처리 모드")
         
         # 이전 결과 폴더/임시 폴더 삭제
         if output_dir.exists():
-            shutil.rmtree(output_dir)
+            safe_rmtree(output_dir)
         if temp_processing_dir.exists():
-            shutil.rmtree(temp_processing_dir)
+            safe_rmtree(temp_processing_dir)
             
         output_dir.mkdir(exist_ok=True)
         temp_processing_dir.mkdir(exist_ok=True)
         
-        print(f"� 원본 경로: {target_path}")
+        print(f"📂 원본 경로: {target_path}")
         print(f"📁 결과물 저장 경로: {output_dir}")
         
-        # 2. ZIP 파일 목록 탐색
-        zip_files = list(target_path.rglob("*.zip"))
+        # 2. ZIP 파일 목록 확인
         if not zip_files:
-            print("❌ 처리할 ZIP 파일을 찾을 수 없습니다.")
-            shutil.rmtree(temp_processing_dir)
+            if target_path.is_file():
+                print("❌ 지정된 파일이 ZIP 파일이 아닙니다.")
+            else:
+                print("❌ 처리할 ZIP 파일을 찾을 수 없습니다.")
+            safe_rmtree(temp_processing_dir)
             sys.exit(1)
             
         print(f"� 총 {len(zip_files)}개의 ZIP 파일을 처리합니다.")
@@ -596,13 +635,14 @@ JSON 파일 내의 라벨링 오류를 감지하고, 한글 인코딩 문제까�
                     pbar.write(f"  ❌ {zip_path.name} 처리 중 오류: {e}")
                 finally:
                     # 임시 추출 폴더 정리
-                    shutil.rmtree(extract_dir, ignore_errors=True)
+                    if 'extract_dir' in locals():
+                        safe_rmtree(extract_dir)
                     pbar.update(1)
 
         # 4. 최종 정리
-        shutil.rmtree(temp_processing_dir, ignore_errors=True)
+        safe_rmtree(temp_processing_dir)
         print(f"\n🎉 처리 완료! 총 {total_changes}개 항목이 변경되었습니다.")
-        print(f"� 결과는 {output_dir} 폴더에 저장되었습니다.")
+        print(f"📂 결과는 {output_dir} 폴더에 저장되었습니다.")
         return
     
     if args.paratext_only:

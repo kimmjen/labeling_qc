@@ -1,0 +1,147 @@
+﻿source_file,v2_output,v2_result_summary,v2_paratext_count,v2_listtext_count,v3_output,v3_result_summary,v3_paratext_count,v3_listtext_count,json_loaded
+KINX2020050914_visualinfo.json,[],No data,0,0,[],No data,0,0,True
+KINX2020111123_visualinfo.json,[],No data,0,0,[],No data,0,0,True
+KINX2021001194_visualinfo.json,[9],P:1|L:0|O:0,1,0,"[9, 11]",P:1|L:1|O:0,1,1,True
+KINX2021001195_visualinfo.json,[11],P:1|L:0|O:0,1,0,[11],P:1|L:0|O:0,1,0,True
+KINX2021010573_visualinfo.json,[9],P:1|L:0|O:0,1,0,[9],P:1|L:0|O:0,1,0,True
+KINX2021013203_visualinfo.json,"[8, 10]",P:0|L:2|O:0,0,2,"[8, 9, 10]",P:0|L:3|O:0,0,3,True
+KINX2021014226_visualinfo.json,"[8, 9, 10]",P:0|L:3|O:0,0,3,"[8, 9, 10]",P:0|L:3|O:0,0,3,True
+KINX2021014818_visualinfo.json,[],No data,0,0,"[5, 6, 7]",P:0|L:3|O:0,0,3,True
+KINX2021036211_visualinfo.json,"[6, 7, 8]",P:3|L:0|O:0,3,0,"[6, 7, 8]",P:3|L:0|O:0,3,0,True
+KINX2021060496_visualinfo.json,[12],P:0|L:1|O:0,0,1,"[9, 10, 11, 12]",P:0|L:4|O:0,0,4,True
+KINX2021062820_visualinfo.json,[7],P:0|L:1|O:0,0,1,"[5, 6, 7]",P:0|L:3|O:0,0,3,True
+KINX2021069890_visualinfo.json,[10],P:0|L:1|O:0,0,1,[10],P:0|L:1|O:0,0,1,True
+KINX2021084686_visualinfo.json,[],No data,0,0,"[5, 6, 7, 8]",P:0|L:4|O:0,0,4,True
+KINX2021091601_visualinfo.json,[10],P:0|L:1|O:0,0,1,"[8, 9, 10]",P:0|L:3|O:0,0,3,True
+KINX2021116965_visualinfo.json,"[8, 9, 10]",P:0|L:3|O:0,0,3,"[8, 9, 10]",P:0|L:3|O:0,0,3,True
+KINX2021125521_visualinfo.json,"[9, 10, 11]",P:0|L:3|O:0,0,3,"[9, 10, 11]",P:0|L:3|O:0,0,3,True
+KINX2021144293_visualinfo.json,[9],P:0|L:1|O:0,0,1,"[6, 7, 9]",P:0|L:3|O:0,0,3,True
+KINX2021160429_visualinfo.json,"[7, 8, 9]",P:0|L:3|O:0,0,3,"[7, 8, 9]",P:0|L:3|O:0,0,3,True
+KINX2021183197_visualinfo.json,[8],P:0|L:1|O:0,0,1,"[6, 7, 8]",P:0|L:3|O:0,0,3,True
+KINX2021188922_visualinfo.json,[9],P:0|L:1|O:0,0,1,"[7, 8, 9]",P:0|L:3|O:0,0,3,True
+KINX2021207945_visualinfo.json,"[7, 8, 9]",P:0|L:3|O:0,0,3,"[7, 8, 9]",P:0|L:3|O:0,0,3,True
+KINX2021224209_visualinfo.json,"[8, 9, 10]",P:0|L:3|O:0,0,3,"[8, 9, 10]",P:0|L:3|O:0,0,3,True
+KINX2021247517_visualinfo.json,"[7, 8, 9]",P:0|L:3|O:0,0,3,"[7, 8, 9]",P:0|L:3|O:0,0,3,True
+KINX2021248415_visualinfo.json,"[7, 11]",P:1|L:1|O:0,1,1,"[7, 8, 9]",P:3|L:0|O:0,3,0,True
+KINX2021249493_visualinfo.json,[11],P:0|L:1|O:0,0,1,[11],P:0|L:1|O:0,0,1,True
+KINX2021250153_visualinfo.json,"[8, 10]",P:0|L:2|O:0,0,2,"[8, 9, 10]",P:0|L:3|O:0,0,3,True
+KINX2022000438_visualinfo.json,"[10, 12]",P:0|L:2|O:0,0,2,"[10, 11, 12]",P:0|L:3|O:0,0,3,True
+KINX2022009042_visualinfo.json,"[9, 13]",P:0|L:2|O:0,0,2,"[9, 10, 11]",P:0|L:3|O:0,0,3,True
+KINX2022009733_visualinfo.json,"[7, 8, 9]",P:0|L:3|O:0,0,3,"[7, 8, 9]",P:0|L:3|O:0,0,3,True
+KINX2022010269_visualinfo.json,"[7, 8, 9]",P:0|L:3|O:0,0,3,"[7, 8, 9]",P:0|L:3|O:0,0,3,True
+KINX2022025567_visualinfo.json,"[9, 12]",P:0|L:2|O:0,0,2,"[7, 8, 9]",P:0|L:3|O:0,0,3,True
+KINX2022028653_visualinfo.json,"[7, 9, 11]",P:0|L:3|O:0,0,3,"[7, 8, 9]",P:0|L:3|O:0,0,3,True
+KINX2022050611_visualinfo.json,"[10, 14]",P:1|L:1|O:0,1,1,"[10, 14]",P:1|L:1|O:0,1,1,True
+KINX2022069049_visualinfo.json,"[8, 9, 10]",P:0|L:3|O:0,0,3,"[8, 9, 10]",P:0|L:3|O:0,0,3,True
+KINX2022085283_visualinfo.json,"[8, 9]",P:0|L:2|O:0,0,2,"[7, 8, 9]",P:0|L:3|O:0,0,3,True
+KINX2022093814_visualinfo.json,[9],P:1|L:0|O:0,1,0,[9],P:1|L:0|O:0,1,0,True
+KINX2022099387_visualinfo.json,"[7, 8, 9]",P:0|L:3|O:0,0,3,"[7, 8, 9]",P:0|L:3|O:0,0,3,True
+KINX2022116385_visualinfo.json,"[8, 9, 10]",P:0|L:3|O:0,0,3,"[8, 9, 10]",P:0|L:3|O:0,0,3,True
+KINX2022135472_visualinfo.json,"[7, 8, 9]",P:0|L:3|O:0,0,3,"[7, 8, 9]",P:0|L:3|O:0,0,3,True
+KINX2022143962_visualinfo.json,[9],P:0|L:1|O:0,0,1,[9],P:0|L:1|O:0,0,1,True
+KINX2022154283_visualinfo.json,"[7, 8, 9]",P:0|L:3|O:0,0,3,"[7, 8, 9]",P:0|L:3|O:0,0,3,True
+KINX2022171821_visualinfo.json,[10],P:0|L:1|O:0,0,1,[10],P:0|L:1|O:0,0,1,True
+KINX2022185585_visualinfo.json,"[7, 8]",P:0|L:2|O:0,0,2,"[7, 8]",P:0|L:2|O:0,0,2,True
+KINX2022194720_visualinfo.json,"[7, 8, 9]",P:0|L:3|O:0,0,3,"[7, 8, 9]",P:0|L:3|O:0,0,3,True
+KINX2022213684_visualinfo.json,"[111, 8]",P:0|L:2|O:0,0,2,"[111, 8]",P:0|L:2|O:0,0,2,True
+KINX2022233035_visualinfo.json,"[7, 8, 9]",P:0|L:3|O:0,0,3,"[7, 8, 9]",P:0|L:3|O:0,0,3,True
+KINX2022239821_visualinfo.json,"[7, 9]",P:0|L:2|O:0,0,2,"[7, 9]",P:0|L:2|O:0,0,2,True
+KINX2022241561_visualinfo.json,"[8, 9, 10]",P:0|L:3|O:0,0,3,"[8, 9, 10]",P:0|L:3|O:0,0,3,True
+KINX2022242304_visualinfo.json,"[7, 8, 9]",P:0|L:3|O:0,0,3,"[7, 8, 9]",P:0|L:3|O:0,0,3,True
+KINX2022251336_visualinfo.json,[9],P:0|L:1|O:0,0,1,[9],P:0|L:1|O:0,0,1,True
+KINX2023001238_visualinfo.json,[11],P:0|L:1|O:0,0,1,[11],P:0|L:1|O:0,0,1,True
+KINX2023009822_visualinfo.json,"[9, 10, 11]",P:0|L:3|O:0,0,3,"[9, 10, 11]",P:0|L:3|O:0,0,3,True
+KINX2023010068_visualinfo.json,"[9, 10, 11]",P:0|L:3|O:0,0,3,"[9, 10, 11]",P:0|L:3|O:0,0,3,True
+KINX2023024240_visualinfo.json,"[8, 9, 10]",P:0|L:3|O:0,0,3,"[8, 9, 10]",P:0|L:3|O:0,0,3,True
+KINX2023026358_visualinfo.json,"[11, 14, 15]",P:0|L:3|O:0,0,3,"[11, 14, 15]",P:0|L:3|O:0,0,3,True
+KINX2023033645_visualinfo.json,"[9, 10, 11]",P:3|L:0|O:0,3,0,"[9, 10, 11]",P:3|L:0|O:0,3,0,True
+KINX2023045473_visualinfo.json,[12],P:0|L:1|O:0,0,1,[12],P:0|L:1|O:0,0,1,True
+KINX2023071962_visualinfo.json,"[9, 10, 11]",P:0|L:3|O:0,0,3,"[9, 10, 11]",P:0|L:3|O:0,0,3,True
+KINX2023084782_visualinfo.json,"[9, 13, 14]",P:0|L:3|O:0,0,3,"[9, 10, 11]",P:0|L:3|O:0,0,3,True
+KINX2023104970_visualinfo.json,"[10, 15]",P:0|L:2|O:0,0,2,"[10, 11, 12]",P:0|L:3|O:0,0,3,True
+KINX2023108514_visualinfo.json,"[9, 10, 11]",P:0|L:3|O:0,0,3,"[9, 10, 11]",P:0|L:3|O:0,0,3,True
+KINX2023127584_visualinfo.json,[12],P:0|L:1|O:0,0,1,[12],P:0|L:1|O:0,0,1,True
+KINX2023142073_visualinfo.json,"[9, 10, 12]",P:0|L:3|O:0,0,3,"[9, 10, 11, 12]",P:0|L:4|O:0,0,4,True
+KINX2023149254_visualinfo.json,"[9, 10, 11]",P:0|L:3|O:0,0,3,"[9, 10, 11]",P:0|L:3|O:0,0,3,True
+KINX2023166043_visualinfo.json,[13],P:0|L:1|O:0,0,1,[13],P:0|L:1|O:0,0,1,True
+KINX2023172903_visualinfo.json,[12],P:0|L:1|O:0,0,1,"[10, 11, 12]",P:0|L:3|O:0,0,3,True
+KINX2023182440_visualinfo.json,"[10, 12, 16]",P:0|L:3|O:0,0,3,"[10, 11, 12]",P:0|L:3|O:0,0,3,True
+KINX2023184381_visualinfo.json,"[10, 14]",P:0|L:2|O:0,0,2,"[8, 9, 10]",P:0|L:3|O:0,0,3,True
+KINX2023193136_visualinfo.json,"[9, 10, 14]",P:0|L:3|O:0,0,3,"[12, 13, 14]",P:0|L:3|O:0,0,3,True
+KINX2023210511_visualinfo.json,"[9, 10, 11, 13, 14, 15]",P:0|L:6|O:0,0,6,"[9, 10, 11]",P:0|L:3|O:0,0,3,True
+KINX2023216785_visualinfo.json,"[10, 11, 12, 14, 15]",P:0|L:5|O:0,0,5,"[10, 11, 12]",P:0|L:3|O:0,0,3,True
+KINX2023218104_visualinfo.json,"[10, 11, 12]",P:0|L:3|O:0,0,3,"[10, 11, 12]",P:0|L:3|O:0,0,3,True
+KINX2024006069_visualinfo.json,[9],P:1|L:0|O:0,1,0,[9],P:1|L:0|O:0,1,0,True
+KINX2024008426_visualinfo.json,[14],P:0|L:1|O:0,0,1,"[12, 13, 14]",P:0|L:3|O:0,0,3,True
+KINX2024008704_visualinfo.json,"[8, 9]",P:0|L:2|O:0,0,2,"[8, 9]",P:0|L:2|O:0,0,2,True
+KINX2024023261_visualinfo.json,[],No data,0,0,[6],P:0|L:1|O:0,0,1,True
+KINX2024023620_visualinfo.json,"[5, 6]",P:0|L:2|O:0,0,2,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024023624_visualinfo.json,"[6, 7]",P:0|L:2|O:0,0,2,"[6, 7]",P:0|L:2|O:0,0,2,True
+KINX2024040946_visualinfo.json,"[12, 13, 14, 15]",P:0|L:4|O:0,0,4,"[12, 13, 14]",P:0|L:3|O:0,0,3,True
+KINX2024041830_visualinfo.json,"[5, 6]",P:0|L:2|O:0,0,2,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024043681_visualinfo.json,"[6, 7, 8]",P:0|L:3|O:0,0,3,"[6, 7, 8]",P:0|L:3|O:0,0,3,True
+KINX2024047746_visualinfo.json,"[5, 6, 7, 9]",P:0|L:4|O:0,0,4,"[5, 6, 7]",P:0|L:3|O:0,0,3,True
+KINX2024059553_visualinfo.json,[],No data,0,0,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024061585_visualinfo.json,"[6, 7, 11]",P:0|L:3|O:0,0,3,"[6, 7, 11]",P:0|L:3|O:0,0,3,True
+KINX2024062497_visualinfo.json,"[5, 6]",P:0|L:2|O:0,0,2,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024065000_visualinfo.json,"[5, 6]",P:0|L:2|O:0,0,2,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024066161_visualinfo.json,"[6, 7, 8]",P:0|L:3|O:0,0,3,"[6, 7, 8]",P:0|L:3|O:0,0,3,True
+KINX2024078076_visualinfo.json,"[5, 6]",P:0|L:2|O:0,0,2,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024081643_visualinfo.json,"[5, 6]",P:0|L:2|O:0,0,2,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024088018_visualinfo.json,"[6, 7]",P:0|L:2|O:0,0,2,"[6, 7]",P:0|L:2|O:0,0,2,True
+KINX2024088205_visualinfo.json,"[5, 6]",P:0|L:2|O:0,0,2,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024092555_visualinfo.json,[6],P:0|L:1|O:0,0,1,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024094520_visualinfo.json,[],No data,0,0,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024098961_visualinfo.json,"[6, 7, 8]",P:0|L:3|O:0,0,3,"[6, 7, 8]",P:0|L:3|O:0,0,3,True
+KINX2024107463_visualinfo.json,"[5, 6]",P:0|L:2|O:0,0,2,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024111294_visualinfo.json,"[5, 6]",P:0|L:2|O:0,0,2,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024113343_visualinfo.json,"[6, 7, 8]",P:0|L:3|O:0,0,3,"[6, 7, 8]",P:0|L:3|O:0,0,3,True
+KINX2024114672_visualinfo.json,"[5, 6]",P:0|L:2|O:0,0,2,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024116346_visualinfo.json,"[6, 7]",P:0|L:2|O:0,0,2,"[6, 7]",P:0|L:2|O:0,0,2,True
+KINX2024116881_visualinfo.json,"[5, 6]",P:0|L:2|O:0,0,2,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024118739_visualinfo.json,[12],P:0|L:1|O:0,0,1,[12],P:0|L:1|O:0,0,1,True
+KINX2024121049_visualinfo.json,[],No data,0,0,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024123823_visualinfo.json,"[5, 6]",P:0|L:2|O:0,0,2,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024134677_visualinfo.json,"[6, 7, 8]",P:0|L:3|O:0,0,3,"[6, 7, 8]",P:0|L:3|O:0,0,3,True
+KINX2024134685_visualinfo.json,[],No data,0,0,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024139779_visualinfo.json,"[5, 6, 7]",P:0|L:3|O:0,0,3,"[5, 6, 7]",P:0|L:3|O:0,0,3,True
+KINX2024150872_visualinfo.json,"[6, 7]",P:0|L:2|O:0,0,2,"[6, 7]",P:0|L:2|O:0,0,2,True
+KINX2024151696_visualinfo.json,[5],P:0|L:1|O:0,0,1,[5],P:0|L:1|O:0,0,1,True
+KINX2024156109_visualinfo.json,[],No data,0,0,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024157298_visualinfo.json,"[6, 7, 8]",P:0|L:3|O:0,0,3,"[10, 11, 12]",P:0|L:3|O:0,0,3,True
+KINX2024159491_visualinfo.json,"[5, 6]",P:0|L:2|O:0,0,2,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024162528_visualinfo.json,"[5, 6]",P:0|L:2|O:0,0,2,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024175969_visualinfo.json,[6],P:0|L:1|O:0,0,1,[6],P:0|L:1|O:0,0,1,True
+KINX2024177334_visualinfo.json,"[7, 11]",P:0|L:2|O:0,0,2,[7],P:0|L:1|O:0,0,1,True
+KINX2024178314_visualinfo.json,[],No data,0,0,"[5, 6, 7]",P:0|L:3|O:0,0,3,True
+KINX2024180798_visualinfo.json,"[6, 7]",P:0|L:2|O:0,0,2,"[6, 7]",P:0|L:2|O:0,0,2,True
+KINX2024184760_visualinfo.json,"[5, 6]",P:0|L:2|O:0,0,2,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024186613_visualinfo.json,[],No data,0,0,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024195326_visualinfo.json,"[5, 6]",P:0|L:2|O:0,0,2,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024198159_visualinfo.json,"[6, 7, 8]",P:0|L:3|O:0,0,3,"[6, 7, 8]",P:0|L:3|O:0,0,3,True
+KINX2024198744_visualinfo.json,"[7, 9]",P:0|L:2|O:0,0,2,"[7, 9]",P:0|L:2|O:0,0,2,True
+KINX2024198879_visualinfo.json,[],No data,0,0,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024209219_visualinfo.json,[7],P:0|L:1|O:0,0,1,"[6, 7]",P:0|L:2|O:0,0,2,True
+KINX2024209243_visualinfo.json,[],No data,0,0,"[5, 6, 7]",P:0|L:3|O:0,0,3,True
+KINX2024209597_visualinfo.json,"[9, 13]",P:0|L:2|O:0,0,2,"[6, 7, 8, 9]",P:0|L:4|O:0,0,4,True
+KINX2024209813_visualinfo.json,"[5, 6]",P:0|L:2|O:0,0,2,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024210050_visualinfo.json,[5],P:0|L:1|O:0,0,1,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024210493_visualinfo.json,"[5, 6]",P:0|L:2|O:0,0,2,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024210965_visualinfo.json,"[6, 7]",P:0|L:2|O:0,0,2,"[6, 7]",P:0|L:2|O:0,0,2,True
+KINX2024219737_visualinfo.json,"[5, 6]",P:0|L:2|O:0,0,2,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024219856_visualinfo.json,"[5, 6]",P:0|L:2|O:0,0,2,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024220065_visualinfo.json,"[6, 7, 8]",P:0|L:3|O:0,0,3,"[6, 7, 8]",P:0|L:3|O:0,0,3,True
+KINX2024220309_visualinfo.json,"[5, 6]",P:0|L:2|O:0,0,2,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2024220670_visualinfo.json,"[5, 6, 8]",P:0|L:3|O:0,0,3,"[5, 6, 8]",P:0|L:3|O:0,0,3,True
+KINX2024220908.pdf_visualinfo.json,"[5, 7]",JSON load failed,0,0,"[5, 7]",JSON load failed,0,0,False
+KINX2024228145_visualinfo.json,"[6, 7]",P:0|L:2|O:0,0,2,"[6, 7]",P:0|L:2|O:0,0,2,True
+KINX2025000285_visualinfo.json,"[5, 6]",P:0|L:2|O:0,0,2,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2025001042_visualinfo.json,[7],P:0|L:1|O:0,0,1,"[6, 7]",P:0|L:2|O:0,0,2,True
+KINX2025017020_visualinfo.json,[],No data,0,0,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2025017530_visualinfo.json,"[5, 6]",P:0|L:2|O:0,0,2,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2025032533_visualinfo.json,"[5, 6]",P:0|L:2|O:0,0,2,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2025054792_visualinfo.json,"[5, 6]",P:0|L:2|O:0,0,2,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2025062761_visualinfo.json,"[6, 7]",P:0|L:2|O:0,0,2,"[6, 7]",P:0|L:2|O:0,0,2,True
+KINX2025077028_visualinfo.json,[6],P:0|L:1|O:0,0,1,"[5, 6]",P:0|L:2|O:0,0,2,True
+KINX2025080664_visualinfo.json,[6],P:0|L:1|O:0,0,1,"[5, 6]",P:0|L:2|O:0,0,2,True
+SERL12025000000008_3422266_visualinfo.json,"[5, 6]",JSON load failed,0,0,"[5, 6]",JSON load failed,0,0,False

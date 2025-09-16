@@ -1,0 +1,20 @@
+# result_formatter.py 실행을 위한 요구사항
+# 모든 라이브러리가 Python 기본 내장이므로 별도 설치 불필요
+
+# Python 버전 요구사항:
+# Python >= 3.5 (typing 모듈 때문)
+# Python >= 3.4 (pathlib 모듈 때문)
+
+# 권장 Python 버전: 3.7+
+
+# 실행 방법:
+# python result_formatter.py
+
+# 필요한 파일들:
+# - result_formatter.py (메인 실행 파일)
+# - filesforabstract.zip (ZIP 데이터)
+# - responses_v2.csv (V2 모델 결과)
+# - responses_v3.csv (V3 모델 결과)
+
+# 출력 파일:
+# - validation_results.csv (결과 파일)
