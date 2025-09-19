@@ -8,6 +8,7 @@ import sys
 import time
 import json
 import re
+import os
 from pathlib import Path
 import PyPDF2
 from tqdm import tqdm
@@ -167,6 +168,11 @@ JSON 파일 내의 라벨링 오류를 감지하고, 한글 인코딩 문제까�
         help="ZIP 파일들의 총 페이지 수를 분석하고 통계 정보 출력"
     )
     mode_group.add_argument(
+        "--count-pages-by-worker", 
+        action="store_true", 
+        help="작업자별 폴더의 페이지 수를 분석하고 통합 보고서 생성"
+    )
+    mode_group.add_argument(
         "--upload", 
         action="store_true", 
         help="PDF 파일들을 API로 업로드하여 OCR 처리 후 visualcontent ZIP 파일로 저장"
@@ -238,6 +244,303 @@ JSON 파일 내의 라벨링 오류를 감지하고, 한글 인코딩 문제까�
             with open(args.report, 'w', encoding='utf-8') as f:
                 json.dump(report, f, ensure_ascii=False, indent=2)
             print(f"📄 비교 보고서 저장: {args.report}")
+        
+        return
+    
+    # 작업자별 페이지 수 계산 모드
+    if args.count_pages_by_worker:
+        print("📊 작업자별 페이지 수 분석 시작")
+        print(f"🎯 대상 폴더: {target_path}")
+        
+        # 폴더 내용 먼저 확인
+        print(f"📂 폴더 내용 스캔...")
+        for item in target_path.iterdir():
+            if item.is_dir():
+                zip_count = len(list(item.glob("*.zip")))
+                print(f"   📁 {item.name}/ (ZIP: {zip_count}개)")
+            elif item.is_file():
+                print(f"   📄 {item.name} ({item.suffix})")
+        
+        # 작업자별 폴더 스캔
+        worker_folders = []
+        for item in target_path.iterdir():
+            if item.is_dir() and not item.name.startswith('.') and item.name not in ['temp_page_count', 'temp_extract']:
+                # 폴더 내 ZIP 파일 확인
+                zip_files = list(item.glob("*.zip"))
+                if zip_files:
+                    worker_folders.append(item)
+                    print(f"   ✅ 작업자 폴더 인식: {item.name}")
+            elif item.is_file() and item.suffix.lower() == '.zip':
+                # 작업자별 통합 ZIP 파일인 경우 (파일명이 작업자명)
+                worker_folders.append(item)
+                print(f"   ✅ 작업자 ZIP 파일 인식: {item.name}")
+        
+        if not worker_folders:
+            print("❌ 작업자 폴더 또는 작업자별 ZIP 파일을 찾을 수 없습니다.")
+            print("💡 확인 사항:")
+            print("   - 폴더 내에 ZIP 파일이 있는 하위 폴더가 있는지")
+            print("   - 작업자명.zip 형태의 파일이 있는지")
+            sys.exit(1)
+        
+        print(f"👥 발견된 작업자: {len(worker_folders)}명")
+        for worker_item in worker_folders:
+            if worker_item.is_dir():
+                zip_count = len(list(worker_item.glob("*.zip")))
+                print(f"   📁 {worker_item.name}: {zip_count}개 ZIP 파일")
+            else:
+                print(f"   📦 {worker_item.stem}: 통합 ZIP 파일")
+        
+        # 전체 결과 저장용
+        all_results = {
+            "analysis_date": time.strftime("%Y-%m-%d %H:%M:%S"),
+            "total_workers": len(worker_folders),
+            "workers": {},
+            "summary": {}
+        }
+        
+        total_documents = 0
+        total_pages = 0
+        
+        # 각 작업자별 분석
+        for worker_item in worker_folders:
+            if worker_item.is_dir():
+                worker_name = worker_item.name
+                worker_zip_source = worker_item  # 폴더 내 ZIP 파일들
+            else:
+                worker_name = worker_item.stem
+                worker_zip_source = worker_item  # 통합 ZIP 파일
+            
+            print(f"\n👤 {worker_name} 분석 중...")
+            
+            try:
+                # 페이지 수 계산
+                worker_total_pages = 0
+                worker_file_pages = {}
+                
+                if worker_item.is_dir():
+                    # 폴더 내 ZIP 파일들 처리 (통합 ZIP)
+                    worker_zip_files = list(worker_zip_source.glob("*.zip"))
+                    print(f"   📁 폴더에서 {len(worker_zip_files)}개 통합 ZIP 파일 발견")
+                    
+                    # 모든 개별 ZIP 파일을 저장할 리스트
+                    zip_files = []
+                    
+                    # 각 통합 ZIP 파일을 처리
+                    for unified_zip in worker_zip_files:
+                        print(f"   📦 통합 ZIP 해제: {unified_zip.name}")
+                        
+                        # 통합 ZIP을 작업자 폴더에 직접 해제
+                        unified_extract_dir = worker_zip_source / f"extracted_{unified_zip.stem}"
+                        unified_extract_dir.mkdir(exist_ok=True)
+                        
+                        print(f"      📁 해제 위치: {unified_extract_dir}")
+                        
+                        try:
+                            with zipfile.ZipFile(unified_zip, 'r') as zip_ref:
+                                file_list = zip_ref.namelist()
+                                individual_zips = [f for f in file_list if f.endswith('.zip')]
+                                print(f"      📦 내부에서 {len(individual_zips)}개 개별 ZIP 발견")
+                                
+                                # 통합 ZIP 압축 해제 (작업자 폴더에 직접)
+                                zip_ref.extractall(unified_extract_dir)
+                                print(f"      ✅ 해제 완료: {len(file_list)}개 파일")
+                                
+                                # 개별 ZIP 파일들을 리스트에 추가
+                                for zip_name in individual_zips:
+                                    zip_path = unified_extract_dir / zip_name
+                                    if zip_path.exists():
+                                        zip_files.append(zip_path)
+                                        if worker_name in ['강아름', '김경진']:
+                                            print(f"         ✅ 개별 ZIP: {zip_name}")
+                                
+                        except Exception as e:
+                            print(f"      ❌ 통합 ZIP 해제 오류: {e}")
+                            continue
+                    
+                    print(f"   📊 총 {len(zip_files)}개 개별 ZIP 파일 처리 예정")
+                else:
+                    # 통합 ZIP 파일 먼저 압축 해제
+                    print(f"   📦 통합 ZIP 파일 압축 해제 중... ({worker_zip_source})")
+                    print(f"   📦 파일 크기: {worker_zip_source.stat().st_size:,} bytes")
+                    
+                    worker_extract_dir = temp_extract_dir / "worker_extracted"
+                    worker_extract_dir.mkdir(exist_ok=True)
+                    
+                    try:
+                        with zipfile.ZipFile(worker_zip_source, 'r') as zip_ref:
+                            # ZIP 파일 내용 확인
+                            file_list = zip_ref.namelist()
+                            print(f"   📦 ZIP 내부 파일 {len(file_list)}개 발견")
+                            if len(file_list) <= 10:
+                                for f in file_list[:10]:
+                                    print(f"      - {f}")
+                            else:
+                                for f in file_list[:5]:
+                                    print(f"      - {f}")
+                                print(f"      ... (총 {len(file_list)}개)")
+                            
+                            # 압축 해제
+                            zip_ref.extractall(worker_extract_dir)
+                            print(f"   ✅ 압축 해제 완료: {worker_extract_dir}")
+                            
+                    except zipfile.BadZipFile as e:
+                        print(f"   ❌ 잘못된 ZIP 파일: {e}")
+                        continue
+                    except Exception as e:
+                        print(f"   ❌ 압축 해제 오류: {e}")
+                        continue
+                    
+                    # 압축 해제된 폴더에서 개별 ZIP 파일들 찾기
+                    zip_files = []
+                    print(f"   🔍 개별 ZIP 파일 검색 중...")
+                    
+                    for root, dirs, files in os.walk(worker_extract_dir):
+                        print(f"      📂 검색 중: {root}")
+                        zip_in_dir = [f for f in files if f.endswith('.zip')]
+                        if zip_in_dir:
+                            print(f"         찾은 ZIP: {zip_in_dir}")
+                        for file in files:
+                            if file.endswith('.zip'):
+                                zip_path = Path(root) / file
+                                zip_files.append(zip_path)
+                                print(f"         ✅ 발견: {zip_path}")
+                    
+                    print(f"   📦 통합 ZIP에서 {len(zip_files)}개 개별 ZIP 파일 발견")
+                
+                # 개별 ZIP 파일들 분석 (ZipProcessor 사용하지 않음)
+                for zip_file in zip_files:
+                    zip_name = zip_file.stem
+                    if zip_name.startswith('visualcontent-'):
+                        doc_name = zip_name.replace('visualcontent-', '')
+                    else:
+                        doc_name = zip_name
+                    
+                    try:
+                        # 개별 ZIP 파일을 작업자 폴더 내에 압축 해제
+                        # 파일명에서 .zip 제거하고 폴더명으로 사용
+                        zip_extract_dir = zip_file.parent / f"doc_{doc_name}"
+                        zip_extract_dir.mkdir(exist_ok=True)
+                        
+                        with zipfile.ZipFile(zip_file, 'r') as zip_ref:
+                            zip_ref.extractall(zip_extract_dir)
+                        
+                        # original 폴더의 PDF 파일 찾기
+                        original_folder = zip_extract_dir / "original"
+                        
+                        if worker_name in ['강아름', '김경진']:  # 처음 2명만 상세 로그
+                            print(f"      📄 {doc_name} 분석:")
+                            print(f"         ZIP 압축 해제: {zip_extract_dir}")
+                            print(f"         original 폴더 존재: {original_folder.exists()}")
+                        
+                        if original_folder.exists():
+                            pdf_files = list(original_folder.glob("*.pdf"))
+                            if worker_name in ['강아름', '김경진']:
+                                print(f"         PDF 파일: {[f.name for f in pdf_files]}")
+                            
+                            if pdf_files:
+                                pdf_file = pdf_files[0]
+                                try:
+                                    with open(pdf_file, 'rb') as file:
+                                        pdf_reader = PyPDF2.PdfReader(file)
+                                        pages_count = len(pdf_reader.pages)
+                                    
+                                    if worker_name in ['강아름', '김경진']:
+                                        print(f"         PDF 페이지 수: {pages_count}페이지")
+                                        print(f"         PDF 파일 크기: {pdf_file.stat().st_size:,} bytes")
+                                    
+                                    worker_file_pages[doc_name] = pages_count
+                                    worker_total_pages += pages_count
+                                    
+                                except Exception as e:
+                                    if worker_name in ['강아름', '김경진']:
+                                        print(f"         ❌ PDF 읽기 오류: {e}")
+                                    worker_file_pages[doc_name] = 1
+                                    worker_total_pages += 1
+                            else:
+                                if worker_name in ['강아름', '김경진']:
+                                    print(f"         ⚠️ PDF 파일 없음 - 기본값 1페이지 적용")
+                                worker_file_pages[doc_name] = 1
+                                worker_total_pages += 1
+                        else:
+                            if worker_name in ['강아름', '김경진']:
+                                print(f"         ⚠️ original 폴더 없음 - 기본값 1페이지 적용")
+                            worker_file_pages[doc_name] = 1
+                            worker_total_pages += 1
+                            
+                    except Exception as e:
+                        print(f"⚠️ {zip_file.name} 처리 오류: {e}")
+                        worker_file_pages[doc_name] = 1
+                        worker_total_pages += 1
+                
+                # 작업자별 결과 저장
+                worker_result = {
+                    "documents_count": len(worker_file_pages),
+                    "total_pages": worker_total_pages,
+                    "average_pages": round(worker_total_pages/len(worker_file_pages), 1) if worker_file_pages else 0,
+                    "documents": worker_file_pages
+                }
+                
+                all_results["workers"][worker_name] = worker_result
+                total_documents += len(worker_file_pages)
+                total_pages += worker_total_pages
+                
+                # 작업자별 요약 출력
+                print(f"   📚 문서 수: {len(worker_file_pages)}개")
+                print(f"   📖 총 페이지: {worker_total_pages}페이지")
+                print(f"   📊 평균: {worker_total_pages/len(worker_file_pages):.1f}페이지" if worker_file_pages else "   📊 평균: 0페이지")
+                
+            except Exception as e:
+                print(f"❌ {worker_name} 분석 오류: {e}")
+                all_results["workers"][worker_name] = {
+                    "error": str(e),
+                    "documents_count": 0,
+                    "total_pages": 0,
+                    "average_pages": 0
+                }
+            
+            except Exception as e:
+                print(f"❌ {worker_name} 분석 오류: {e}")
+                all_results["workers"][worker_name] = {
+                    "error": str(e),
+                    "documents_count": 0,
+                    "total_pages": 0,
+                    "average_pages": 0
+                }
+        
+        # 전체 요약 계산
+        all_results["summary"] = {
+            "total_documents": total_documents,
+            "total_pages": total_pages,
+            "average_pages_per_document": round(total_pages/total_documents, 1) if total_documents else 0,
+            "average_documents_per_worker": round(total_documents/len(worker_folders), 1),
+            "average_pages_per_worker": round(total_pages/len(worker_folders), 1)
+        }
+        
+        # 전체 결과 출력
+        print(f"\n" + "="*60)
+        print(f"📊 작업자별 페이지 수 분석 완료")
+        print(f"="*60)
+        
+        for worker_name, result in all_results["workers"].items():
+            if "error" not in result:
+                print(f"👤 {worker_name:12} | 📚 {result['documents_count']:3}개 | 📖 {result['total_pages']:4}페이지 | 📊 평균 {result['average_pages']:4.1f}페이지")
+            else:
+                print(f"👤 {worker_name:12} | ❌ 오류 발생")
+        
+        print(f"="*60)
+        print(f"📈 전체 요약:")
+        print(f"   👥 총 작업자: {len(worker_folders)}명")
+        print(f"   📚 총 문서: {total_documents}개")
+        print(f"   📖 총 페이지: {total_pages}페이지")
+        print(f"   📊 문서당 평균: {all_results['summary']['average_pages_per_document']}페이지")
+        print(f"   📊 작업자당 평균 문서: {all_results['summary']['average_documents_per_worker']}개")
+        print(f"   📊 작업자당 평균 페이지: {all_results['summary']['average_pages_per_worker']}페이지")
+        
+        # 보고서 저장
+        if args.report:
+            with open(args.report, 'w', encoding='utf-8') as f:
+                json.dump(all_results, f, ensure_ascii=False, indent=2)
+            print(f"\n📄 작업자별 분석 보고서 저장: {args.report}")
         
         return
     

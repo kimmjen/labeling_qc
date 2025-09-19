@@ -1,0 +1,133 @@
+{
+  "analysis_date": "2025-09-19 09:41:14",
+  "total_workers": 15,
+  "workers": {
+    "강아름": {
+      "documents_count": 1,
+      "total_pages": 1,
+      "average_pages": 1.0,
+      "documents": {
+        "20250918-강아름-원문+번역문_좌우7": 1
+      }
+    },
+    "김경진": {
+      "documents_count": 1,
+      "total_pages": 1,
+      "average_pages": 1.0,
+      "documents": {
+        "20250918-김경진": 1
+      }
+    },
+    "김민주": {
+      "documents_count": 1,
+      "total_pages": 1,
+      "average_pages": 1.0,
+      "documents": {
+        "20250918_김민주": 1
+      }
+    },
+    "김성현": {
+      "documents_count": 1,
+      "total_pages": 1,
+      "average_pages": 1.0,
+      "documents": {
+        "9.18작업": 1
+      }
+    },
+    "김영훈": {
+      "documents_count": 1,
+      "total_pages": 1,
+      "average_pages": 1.0,
+      "documents": {
+        "20250918_김영훈": 1
+      }
+    },
+    "김지윤": {
+      "documents_count": 1,
+      "total_pages": 1,
+      "average_pages": 1.0,
+      "documents": {
+        "20250918-김지윤-법률번역-원문번역문-좌우24": 1
+      }
+    },
+    "김현민": {
+      "documents_count": 1,
+      "total_pages": 1,
+      "average_pages": 1.0,
+      "documents": {
+        "20250918_김현민_1페이지-출판물8": 1
+      }
+    },
+    "박소연": {
+      "documents_count": 1,
+      "total_pages": 1,
+      "average_pages": 1.0,
+      "documents": {
+        "20250918_박소연": 1
+      }
+    },
+    "이다솔": {
+      "documents_count": 1,
+      "total_pages": 1,
+      "average_pages": 1.0,
+      "documents": {
+        "원문+번역문_좌우11_이다솔": 1
+      }
+    },
+    "이수영": {
+      "documents_count": 1,
+      "total_pages": 1,
+      "average_pages": 1.0,
+      "documents": {
+        "20250918_이수영": 1
+      }
+    },
+    "이승원": {
+      "documents_count": 1,
+      "total_pages": 1,
+      "average_pages": 1.0,
+      "documents": {
+        "20250918_이승원": 1
+      }
+    },
+    "이재인": {
+      "documents_count": 1,
+      "total_pages": 1,
+      "average_pages": 1.0,
+      "documents": {
+        "0918_이재인": 1
+      }
+    },
+    "이희재": {
+      "documents_count": 1,
+      "total_pages": 1,
+      "average_pages": 1.0,
+      "documents": {
+        "0918이희재": 1
+      }
+    },
+    "정현택": {
+      "documents_count": 1,
+      "total_pages": 1,
+      "average_pages": 1.0,
+      "documents": {
+        "20250918_정현택": 1
+      }
+    },
+    "조연지": {
+      "documents_count": 1,
+      "total_pages": 1,
+      "average_pages": 1.0,
+      "documents": {
+        "20250918_조연지_법률번역_원문+번역문_좌우26_오늘작업": 1
+      }
+    }
+  },
+  "summary": {
+    "total_documents": 15,
+    "total_pages": 15,
+    "average_pages_per_document": 1.0,
+    "average_documents_per_worker": 1.0,
+    "average_pages_per_worker": 1.0
+  }
+}
